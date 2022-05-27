@@ -1,0 +1,183 @@
+Java
+=================
+
+如果使用maven，可以加入如下依赖::
+
+	<dependency>
+        <groupId>cn.hutool</groupId>
+        <artifactId>hutool-all</artifactId>
+        <version>5.7.22</version>
+    </dependency>
+
+
+示例程序
+------------------
+
+::
+
+
+import cn.hutool.core.io.IoUtil;
+import cn.hutool.core.util.IdUtil;
+import cn.hutool.http.HttpRequest;
+import cn.hutool.http.HttpResponse;
+import cn.hutool.http.HttpUtil;
+import cn.hutool.json.JSON;
+import cn.hutool.json.JSONUtil;
+import com.dataqin.evidence.common.utils.RsaKeyFactory;
+import com.dataqin.evidence.modules.web.model.EvidenceFileParam;
+import com.dataqin.evidence.modules.web.model.EvidenceHashParam;
+import org.junit.Test;
+
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.security.PrivateKey;
+import java.security.Signature;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+public class ApiRequestTest {
+    private String uri = "http://127.0.0.1:18848/api";
+
+    /**
+     *
+     * @throws Exception
+     */
+    @Test
+    public void detail() throws Exception {
+        String apiName = "/evidence/detail";
+        HttpRequest httpRequest = createRequestPost(apiName);
+        // 构建请求参数
+        Map<String ,Object> body = new HashMap<>();
+        body.put("attestationId","did:bid:efsRrRCTEmA7ZWodWFPkjMW2u5Y4hikv");
+        httpRequest.body(JSONUtil.toJsonStr(body));
+        HttpResponse httpResponse = httpRequest.execute();
+        String result = httpResponse.body();
+        JSON json = JSONUtil.parse(result);
+        System.out.println(json.toString());
+    }
+
+    @Test
+    public void list() throws Exception {
+        // API path
+        String apiName = "/evidence/list";
+        HttpRequest httpRequest = createRequestPost(apiName);
+        // 构建请求参数
+        Map<String ,Object> body = new HashMap<>();
+        body.put("attestationId","did:bid:efsRrRCTEmA7ZWodWFPkjMW2u5Y4hikv");
+        httpRequest.body(JSONUtil.toJsonStr(body));
+        HttpResponse httpResponse = httpRequest.execute();
+        String result = httpResponse.body();
+        JSON json = JSONUtil.parse(result);
+        System.out.println(json.toString());
+    }
+
+    @Test
+    public void hash() throws Exception {
+        // API path
+        String apiName = "/evidence/hash";
+        HttpRequest httpRequest = createRequestPost(apiName);
+        // 构建请求参数
+        List<EvidenceHashParam.HashInfo> list = new ArrayList<>();
+        EvidenceHashParam.HashInfo hashInfo1 = new EvidenceHashParam.HashInfo();
+        hashInfo1.setFilename("test1");
+        hashInfo1.setFileHash("98df1f1dfb3b1a123c1517912dc70447aa61c6be532ac99de973abb6219e1653");
+        list.add(hashInfo1);
+        EvidenceHashParam evidenceHashParam = new EvidenceHashParam();
+        evidenceHashParam.setFileLabel("标签");
+        evidenceHashParam.setList(list);
+        httpRequest.body(JSONUtil.toJsonStr(evidenceHashParam));
+        HttpResponse httpResponse = httpRequest.execute();
+        String result = httpResponse.body();
+        JSON json = JSONUtil.parse(result);
+        System.out.println(json.toString());
+    }
+    @Test
+    public void file() throws Exception {
+        // API path
+        String apiName = "/evidence/file";
+        HttpRequest httpRequest = createRequestPost(apiName);
+        // 构建请求参数
+        List<Long> list = new ArrayList<>();
+        list.add(1529663660129480704L);
+        EvidenceFileParam evidenceFileParam = new EvidenceFileParam();
+        evidenceFileParam.setFileLabel("标签");
+        evidenceFileParam.setFiles(list);
+        httpRequest.body(JSONUtil.toJsonStr(evidenceFileParam));
+        HttpResponse httpResponse = httpRequest.execute();
+        String result = httpResponse.body();
+        JSON json = JSONUtil.parse(result);
+        System.out.println(json.toString());
+    }
+    @Test
+    public void uploadFile() throws Exception {
+        // API path
+        String apiName = "/file/upload";
+        HttpRequest httpRequest = createRequestPost(apiName);
+        httpRequest.form("file",new File("/tmp/背景图.png"));
+        httpRequest.form("type","pic");
+
+        HttpResponse httpResponse = httpRequest.execute();
+        String result = httpResponse.body();
+        JSON json = JSONUtil.parse(result);
+        System.out.println(json.toString());
+    }
+    @Test
+    public void download() throws Exception {
+        // API path
+        String apiName = "/file/download/1529707935276466176";
+        HttpRequest httpRequest = createRequestGet(apiName);
+
+        HttpResponse httpResponse = httpRequest.execute();
+        String header = httpResponse.header("Content-Disposition");
+        Pattern pattern = Pattern.compile(".*filename=\"(.*)\".*");
+        Matcher matcher = pattern.matcher(header);
+        String fileName = "";
+        if (matcher.matches()) {
+            fileName = matcher.group(1);
+        }
+        byte[] bytes = httpResponse.bodyBytes();
+        IoUtil.write(new FileOutputStream("/tmp/" + fileName),true,bytes);
+    }
+
+    private HttpRequest createRequestPost(String apiName) throws Exception {
+        // 构建请求
+        HttpRequest httpRequest = HttpUtil.createPost(uri + apiName);
+        setHttpRequestHeaders(httpRequest);
+        return httpRequest;
+    }
+    private HttpRequest createRequestGet(String apiName) throws Exception {
+        // 构建请求
+        HttpRequest httpRequest = HttpUtil.createGet(uri + apiName);
+        setHttpRequestHeaders(httpRequest);
+        return httpRequest;
+    }
+
+    private HttpRequest setHttpRequestHeaders(HttpRequest httpRequest) throws Exception {
+        // RSA私钥文件路径
+        String keyFile = "/tmp/rsa_private.key";
+        // 请求头
+        String requestId = IdUtil.simpleUUID();
+        String accessKey = "d0219ea9a13048baa7c6eeb38f7e6644";
+        String nonce = String.valueOf(System.currentTimeMillis() / 1000);
+
+        //待签名数据 = requestId+accessKey+nonce
+        String data = requestId + accessKey + nonce;
+        // 开始签名
+        PrivateKey privateKey = RsaKeyFactory.getPrivateKey(new InputStreamReader(new FileInputStream(keyFile)));
+        Signature signature = Signature.getInstance("SHA256WithRSA");
+        signature.initSign(privateKey);
+        signature.update(data.getBytes(StandardCharsets.UTF_8));
+        // 签名使用Base64编码后得到的值即为请求头中signature字段的值
+        String signatureData = Base64.getEncoder().encodeToString( signature.sign());
+        // 构建请求头
+        Map<String ,String> headers = new HashMap<>();
+        headers.put("request_id", requestId);
+        headers.put("access_key", accessKey);
+        headers.put("nonce",nonce);
+        headers.put("signature",signatureData);
+        httpRequest.addHeaders(headers);
+        return httpRequest;
+    }
+}
+

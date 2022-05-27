@@ -40,7 +40,7 @@ signature          使用你的RSA私钥进行签名后的字符串，具体签�
 
 "request_id": "2XiTgZ2oVrBgGqKQ1ruCKh",
 "access_key": "2y7cg8kmoGDrDBXJLaizoD",
-"nonce": 1464594744,
+"nonce": "1464594744",
 "signature": "moGDrDBXJLaizoD2hSWTZ4oqVEJKAmK2RiyT4"
 
 

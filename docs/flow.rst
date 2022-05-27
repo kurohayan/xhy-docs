@@ -15,13 +15,14 @@
 
 .. image:: images/key_3.png
 
-可以参考如下shell命令制作自己的证书，openssl版本要求>=1.0.2::
+可以参考如下shell命令制作自己的rsa公钥和私钥，openssl版本要求>=1.0.2::
 
-	openssl req -x509 -newkey rsa:1024 -nodes -keyout key.pem -out cert.pem
+	openssl genrsa -out rsa_private.key 1024
+	openssl rsa -in rsa_private.key -pubout -out rsa_public.key
 
-将cert.pem中的内容粘贴到文本框中。
+将rsa_public.key中的内容粘贴到文本框中。
 
-.. note:: 请保管好自己的私钥，另外强烈推荐在正式环境下使用CA机构签发的证书作为公钥。
+.. note:: 请保管好自己的私钥。
 
 假定待签名数据头为::
     "request_id": "2XiTgZ2oVrBgGqKQ1ruCKh",
