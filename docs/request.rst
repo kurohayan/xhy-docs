@@ -7,10 +7,10 @@
 --------------
 
 
-API地址：`http://192.168.3.98：18848/api`
+API地址：`https://bitfactory.cn/api`
 
 请求路径=API地址+接口名称，比如hash存证接口的名称是/evidence/hash，则请求路径为
-`http://192.168.3.98：18848/api/evidence/hash`
+`https://bitfactory.cn/api/evidence/hash`
 
 
 方法
@@ -38,10 +38,10 @@ signature          使用你的RSA私钥进行签名后的字符串，具体签�
 例如::
 
 
-"request_id": "2XiTgZ2oVrBgGqKQ1ruCKh",
-"access_key": "2y7cg8kmoGDrDBXJLaizoD",
-"nonce": "1464594744",
-"signature": "moGDrDBXJLaizoD2hSWTZ4oqVEJKAmK2RiyT4"
+    "request_id": "2XiTgZ2oVrBgGqKQ1ruCKh",
+    "access_key": "2y7cg8kmoGDrDBXJLaizoD",
+    "nonce": "1464594744",
+    "signature": "moGDrDBXJLaizoD2hSWTZ4oqVEJKAmK2RiyT4"
 
 
 
@@ -58,14 +58,13 @@ message              错误描述
 
 例如::
 
-{
-    "data": {
-        "no": "rBgGqKQ1ruCKhXiTgZ2oVr",
-    },
-    "errorMessage": "string",
-    "statusCode": "string"
-}
-
+    {
+        "data": {
+            "no": "rBgGqKQ1ruCKhXiTgZ2oVr",
+        },
+        "errorMessage": "string",
+        "statusCode": "string"
+    }
 
 
 错误码

@@ -3,17 +3,17 @@
 
 **第一步：登录星火链网（网页地址）。**
 
-.. image:: images/key_1.png
+.. image:: image/key_1.png
 
 绑定手机号后请联系客服或者商务申请开通API服务
 
 **第二步：进入星火链网（网页地址） 密钥管理，新建秘钥。**
 
-.. image:: images/key_2.png
+.. image:: image/key_2.png
 
 **第三步：上传RSA公钥，上传成功后的结果如下：**
 
-.. image:: images/key_3.png
+.. image:: image/key_3.png
 
 可以参考如下shell命令制作自己的rsa公钥和私钥，openssl版本要求>=1.0.2::
 
@@ -25,6 +25,7 @@
 .. note:: 请保管好自己的私钥。
 
 假定待签名数据头为::
+
     "request_id": "2XiTgZ2oVrBgGqKQ1ruCKh",
     "access_key": "2y7cg8kmoGDrDBXJLaizoD",
     "nonce": 1464594744

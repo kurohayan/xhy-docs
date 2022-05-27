@@ -50,6 +50,7 @@ auditTime                   审核时间
 auditResult                 审核结果
 filename                    文件名
 createTime                  创建时间
+upChainTime                 上链时间
 attestationChannel          数据来源  1.自助 2.API
 dataFileKey                 存证文件的文件id
 username                    用户名称
@@ -118,6 +119,7 @@ info.fileLabel          文件标签
 info.filename           文件名
 info.fileSize           文件大小
 info.createTime         创建时间
+info.upChainTime        上链时间
 info.evidenceType       存证类型 1:文件存证,  2:hash存证
 info.state              1：待审核, 2：待复审, 3：待支付, 4：处理中, 5：存证成功, 6：存证失败
 info.username           用户名称
