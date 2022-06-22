@@ -154,7 +154,7 @@ java::
             }
         }
 
-        private String uri = "http://192.168.3.98:18848/api";
+        private String uri = "http://127.0.0.1:18848/api";
 
         /**
          *
