@@ -23,9 +23,6 @@ java::
     import cn.hutool.http.HttpUtil;
     import cn.hutool.json.JSON;
     import cn.hutool.json.JSONUtil;
-    import com.dataqin.evidence.common.utils.PemReader;
-    import com.dataqin.evidence.modules.web.model.EvidenceFileParam;
-    import com.dataqin.evidence.modules.web.model.EvidenceHashParam;
     import org.junit.Test;
 
     import java.io.*;
@@ -41,7 +38,123 @@ java::
     import java.util.regex.Pattern;
 
     public class ApiRequestTest {
-        private String uri = "http://127.0.0.1:18848/api";
+
+        static class PemReader extends BufferedReader {
+            private static final String BEGIN = "-----BEGIN ";
+            private static final String END = "-----END ";
+            private static final String END_BOUNDARY = "-----";
+
+            public PemReader(Reader in) {
+                super(in);
+            }
+
+            public byte[] readPemObject() {
+                try {
+                    String line = readLine();
+                    while (line != null && !line.startsWith(BEGIN)) {
+                        line = readLine();
+                    }
+                    if (line != null) {
+                        line = line.substring(BEGIN.length());
+                        int index = line.indexOf('-');
+                        if (index > 0 && line.endsWith(END_BOUNDARY) && (line.length() - index) == END_BOUNDARY.length()) {
+                            String type = line.substring(0, index);
+                            return loadObject(type);
+                        }
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+                return null;
+            }
+
+            private byte[] loadObject(String type) {
+                String line;
+                String endMarker = END + type;
+                StringBuilder buf = new StringBuilder();
+                try {
+                    while ((line = readLine()) != null) {
+                        if (line.contains(":")) {
+                            continue;
+                        }
+                        if (line.contains(endMarker)) {
+                            break;
+                        }
+                        buf.append(line.trim());
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+                if (line == null) {
+                    throw new RuntimeException(endMarker + " not found");
+                }
+                return Base64.getDecoder().decode(buf.toString());
+            }
+        }
+
+        static class EvidenceHashParam {
+            private String fileLabel;
+            private List<HashInfo> list;
+            static class HashInfo {
+                private String filename;
+                private String fileHash;
+
+                public String getFilename() {
+                    return filename;
+                }
+
+                public void setFilename(String filename) {
+                    this.filename = filename;
+                }
+
+                public String getFileHash() {
+                    return fileHash;
+                }
+
+                public void setFileHash(String fileHash) {
+                    this.fileHash = fileHash;
+                }
+            }
+
+            public String getFileLabel() {
+                return fileLabel;
+            }
+
+            public void setFileLabel(String fileLabel) {
+                this.fileLabel = fileLabel;
+            }
+
+            public List<HashInfo> getList() {
+                return list;
+            }
+
+            public void setList(List<HashInfo> list) {
+                this.list = list;
+            }
+        }
+
+        static class EvidenceFileParam {
+            private String fileLabel;
+            private List<Long> files;
+
+            public String getFileLabel() {
+                return fileLabel;
+            }
+
+            public void setFileLabel(String fileLabel) {
+                this.fileLabel = fileLabel;
+            }
+
+            public List<Long> getFiles() {
+                return files;
+            }
+
+            public void setFiles(List<Long> files) {
+                this.files = files;
+            }
+        }
+
+        private String uri = "http://192.168.3.98:18848/api";
 
         /**
          *
@@ -96,6 +209,7 @@ java::
             JSON json = JSONUtil.parse(result);
             System.out.println(json.toString());
         }
+
         @Test
         public void file() throws Exception {
             // API path
@@ -162,7 +276,7 @@ java::
             String keyFile = "/tmp/rsa_private.key";
             // 请求头
             String requestId = IdUtil.simpleUUID();
-            String accessKey = "d0219ea9a13048baa7c6eeb38f7e6644";
+            String accessKey = "9d82aeae8c9b4c479715fc2923619472";
             String nonce = String.valueOf(System.currentTimeMillis() / 1000);
 
             //待签名数据 = requestId+accessKey+nonce
@@ -198,4 +312,3 @@ java::
             }
         }
     }
-
