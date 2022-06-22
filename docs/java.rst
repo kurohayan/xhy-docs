@@ -23,15 +23,19 @@ java::
     import cn.hutool.http.HttpUtil;
     import cn.hutool.json.JSON;
     import cn.hutool.json.JSONUtil;
-    import com.dataqin.evidence.common.utils.RsaKeyFactory;
+    import com.dataqin.evidence.common.utils.PemReader;
     import com.dataqin.evidence.modules.web.model.EvidenceFileParam;
     import com.dataqin.evidence.modules.web.model.EvidenceHashParam;
     import org.junit.Test;
 
     import java.io.*;
     import java.nio.charset.StandardCharsets;
+    import java.security.KeyFactory;
+    import java.security.NoSuchAlgorithmException;
     import java.security.PrivateKey;
     import java.security.Signature;
+    import java.security.spec.InvalidKeySpecException;
+    import java.security.spec.PKCS8EncodedKeySpec;
     import java.util.*;
     import java.util.regex.Matcher;
     import java.util.regex.Pattern;
@@ -164,7 +168,7 @@ java::
             //待签名数据 = requestId+accessKey+nonce
             String data = requestId + accessKey + nonce;
             // 开始签名
-            PrivateKey privateKey = RsaKeyFactory.getPrivateKey(new InputStreamReader(new FileInputStream(keyFile)));
+            PrivateKey privateKey = getPrivateKey(new InputStreamReader(new FileInputStream(keyFile)));
             Signature signature = Signature.getInstance("SHA256WithRSA");
             signature.initSign(privateKey);
             signature.update(data.getBytes(StandardCharsets.UTF_8));
@@ -178,6 +182,20 @@ java::
             headers.put("signature",signatureData);
             httpRequest.addHeaders(headers);
             return httpRequest;
+        }
+
+        public static PrivateKey getPrivateKey(Reader reader) {
+            PemReader pemReader = null;
+            try {
+                pemReader = new PemReader(reader);
+                KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+                PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(pemReader.readPemObject());
+                return keyFactory.generatePrivate(keySpec);
+            } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+                throw new RuntimeException(e);
+            } finally {
+                IoUtil.close(pemReader);
+            }
         }
     }
 
