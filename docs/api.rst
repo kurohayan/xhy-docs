@@ -15,6 +15,131 @@
     headers.put("signature",signatureData);
     httpRequest.addHeaders(headers);
 
+文件存证（分两步）：
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+上传文件 - /file/upload
+-------------------------------
+
+客户可以通过该接口上传文件并获取文件id，文件未存证时会有使用期限。
+
+form-data
+^^^^^^^^^^^^^^^
+
+=========  ============================================= ==============
+参数名         描述                                            是否可选
+=========  ============================================= ==============
+file         文件                                             必选
+type         doc:文档pic:图片audio:音频video:视频               必选
+=========  ============================================= ==============
+
+返回的data
+^^^^^^^^^^^^^^
+
+=================  ========================
+字段名 				描述
+=================  ========================
+fileKey                 文件id
+=================  ========================
+
+以java为例::
+
+    // 构建请求参数
+    httpRequest.form("file",new File("/tmp/背景图.png"));
+    httpRequest.form("type","pic");
+    HttpResponse httpResponse = httpRequest.execute();
+    String result = httpResponse.body();
+
+
+文件存证 - /evidence/file
+------------------------------------
+用户进行文件存证
+
+json
+::::::::::::
+
+=================  ======================================= ================
+参数名 			       描述                                     是否可选
+=================  ======================================= ================
+fileLabel           文件标签                                     必选
+files                文件id列表                                 必选
+files[0]             文件id                                    必选
+=================  ======================================= ================
+
+
+
+返回的data
+::::::::::::
+
+调用文件接口成功后会返回文件id对应的存证id
+
+===================  ================================
+字段名 				    描述
+===================  ================================
+list                    bean对象列表
+bean.id                 文件id
+bean.attestationId      存证id
+===================  ================================
+
+以java为例::
+
+    // 构建请求参数
+    List<Long> list = new ArrayList<>();
+    list.add(1529663660129480704L);
+    EvidenceFileParam evidenceFileParam = new EvidenceFileParam();
+    evidenceFileParam.setFileLabel("标签");
+    evidenceFileParam.setFiles(list);
+    httpRequest.body(JSONUtil.toJsonStr(evidenceFileParam));
+    HttpResponse httpResponse = httpRequest.execute();
+    String result = httpResponse.body();
+
+
+hash存证（sha256） - /evidence/hash
+------------------------------------
+用户进行hash存证。
+
+json
+^^^^^^^^^^^^^^^
+=================  ======================================= ================
+参数名 				描述                                    是否可选
+=================  ======================================= ================
+fileLabel           文件标签                                     必选
+list                HashInfo对象列表                            必选
+HashInfo.filename   文件名                                     必选
+HashInfo.fileHash   文件hash                                   必选
+=================  ======================================= ================
+
+返回的data
+^^^^^^^^^^^^^^
+
+调用hash存证接口成功后会返回存证id列表
+
+===================  ================================
+字段名 				    描述
+===================  ================================
+list                    bean对象列表
+bean.hash               文件hash
+bean.attestationId      存证id
+===================  ================================
+
+以java为例::
+
+    // 构建请求参数
+    List<EvidenceHashParam.HashInfo> list = new ArrayList<>();
+    EvidenceHashParam.HashInfo hashInfo1 = new EvidenceHashParam.HashInfo();
+    hashInfo1.setFilename("test1");
+    hashInfo1.setFileHash("98df1f1dfb3b1a123c1517912dc70447aa61c6be532ac99de973abb6219e1653");
+    list.add(hashInfo1);
+    EvidenceHashParam evidenceHashParam = new EvidenceHashParam();
+    evidenceHashParam.setFileLabel("标签");
+    evidenceHashParam.setList(list);
+    httpRequest.body(JSONUtil.toJsonStr(evidenceHashParam));
+    HttpResponse httpResponse = httpRequest.execute();
+    String result = httpResponse.body();
+
+
+
+
 存证详情 - /evidence/detail
 ----------------------
 
@@ -134,115 +259,6 @@ info.username           用户名称
     httpRequest.body(JSONUtil.toJsonStr(body));
     HttpResponse httpResponse = httpRequest.execute();
     String result = httpResponse.body();
-
-hash存证（sha256） - /evidence/hash
-------------------------------------
-用户进行hash存证。
-
-json
-^^^^^^^^^^^^^^^
-=================  ======================================= ================
-参数名 				描述                                    是否可选
-=================  ======================================= ================
-fileLabel           文件标签                                     必选
-list                HashInfo对象列表                            必选
-HashInfo.filename   文件名                                     必选
-HashInfo.fileHash   文件hash                                   必选
-=================  ======================================= ================
-
-返回的data
-^^^^^^^^^^^^^^
-
-调用hash存证接口成功后会返回存证id列表
-
-===================  ================================
-字段名 				    描述
-===================  ================================
-list                    bean对象列表
-bean.hash               文件hash
-bean.attestationId      存证id
-===================  ================================
-
-以java为例::
-
-    // 构建请求参数
-    List<EvidenceHashParam.HashInfo> list = new ArrayList<>();
-    EvidenceHashParam.HashInfo hashInfo1 = new EvidenceHashParam.HashInfo();
-    hashInfo1.setFilename("test1");
-    hashInfo1.setFileHash("98df1f1dfb3b1a123c1517912dc70447aa61c6be532ac99de973abb6219e1653");
-    list.add(hashInfo1);
-    EvidenceHashParam evidenceHashParam = new EvidenceHashParam();
-    evidenceHashParam.setFileLabel("标签");
-    evidenceHashParam.setList(list);
-    httpRequest.body(JSONUtil.toJsonStr(evidenceHashParam));
-    HttpResponse httpResponse = httpRequest.execute();
-    String result = httpResponse.body();
-
-文件存证 - /evidence/file
-------------------------------------
-用户进行文件存证
-
-json
-^^^^^^^^^^^^^^^
-=================  ======================================= ================
-参数名 			       描述                                     是否可选
-=================  ======================================= ================
-fileLabel           文件标签                                     必选
-files                文件id列表                                 必选
-files[0]             文件id                                    必选
-=================  ======================================= ================
-
-
-
-返回的data
-^^^^^^^^^^^^^^
-
-调用文件接口成功后会返回文件id对应的存证id
-
-===================  ================================
-字段名 				    描述
-===================  ================================
-list                    bean对象列表
-bean.id                 文件id
-bean.attestationId      存证id
-===================  ================================
-
-以java为例::
-
-    // 构建请求参数
-    List<Long> list = new ArrayList<>();
-    list.add(1529663660129480704L);
-    EvidenceFileParam evidenceFileParam = new EvidenceFileParam();
-    evidenceFileParam.setFileLabel("标签");
-    evidenceFileParam.setFiles(list);
-    httpRequest.body(JSONUtil.toJsonStr(evidenceFileParam));
-    HttpResponse httpResponse = httpRequest.execute();
-    String result = httpResponse.body();
-
-
-上传文件 - /file/upload
--------------------------------
-
-客户可以通过该接口上传文件并获取文件id，文件未存证时会有使用期限。
-
-form-data
-^^^^^^^^^^^^^^^
-
-=========  ============================================= ==============
-参数名         描述                                            是否可选
-=========  ============================================= ==============
-file         文件                                             必选
-type         doc:文档pic:图片audio:音频video:视频               必选
-=========  ============================================= ==============
-
-返回的data
-^^^^^^^^^^^^^^
-
-=================  ========================
-字段名 				描述
-=================  ========================
-fileKey                 文件id
-=================  ========================
 
 
 下载存证或pdf文件 - /file/download/{fileKey}
