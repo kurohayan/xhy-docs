@@ -138,6 +138,64 @@ bean.attestationId      存证id
     String result = httpResponse.body();
 
 
+存证列表 - /evidence/list
+----------------------
+
+获取存证列表
+
+json
+^^^^^^^^^^^^^^^
+=================  ============================================ ============
+参数名 				描述                                          是否可选
+=================  ============================================ ============
+evidenceType        存证类型 1.文件存证  2.hash存证                   非必选
+evidenceChannel     存证方式 1.自助  2.API                           非必选
+state               3.待支付4.上链中5.存证成功6.存证失败                非必选
+startTime           开始时间                                         非必选
+endTime             结束时间                                         非必选
+pageNumber          当前页码                                         非必选
+pageSize            每页显示数量 最大50                                非必选
+filename            文件名称                                         非必选
+=================  ============================================ ============
+
+
+返回的data
+^^^^^^^^^^^^^^
+
+调用存证获取列表接口成功后会返回存证列表
+
+=====================  ===========================================================
+字段名 				    描述
+=====================  ===========================================================
+totalPage               当前页
+pageSize                每页显示数量
+pageNum                 总页数
+rows                    存证数据对象info
+info.evidenceChannel    存证方式 1.自助  2.API
+info.attestationId      存证id
+info.auditTime          审核时间
+info.auditResult        审核结果
+info.fileHash           文件hash
+info.userId             用户id
+info.fileLabel          文件标签
+info.filename           文件名
+info.fileSize           文件大小
+info.createTime         创建时间
+info.upChainTime        上链时间
+info.evidenceType       存证类型 1:文件存证,  2:hash存证
+info.state              1.待审核 2.待复审 3.待支付 4.上链中 5.存证成功 6.存证失败
+info.username           用户名称
+=====================  ===========================================================
+
+
+以java为例::
+
+    // 构建请求参数
+    Map<String ,Object> body = new HashMap<>();
+    body.put("evidenceType",1);
+    httpRequest.body(JSONUtil.toJsonStr(body));
+    HttpResponse httpResponse = httpRequest.execute();
+    String result = httpResponse.body();
 
 
 存证详情 - /evidence/detail
@@ -197,65 +255,6 @@ checkBean.hash              文件hash
 	// 构建请求参数
     Map<String ,Object> body = new HashMap<>();
     body.put("attestationId","did:bid:efsRrRCTEmA7ZWodWFPkjMW2u5Y4hikv");
-    httpRequest.body(JSONUtil.toJsonStr(body));
-    HttpResponse httpResponse = httpRequest.execute();
-    String result = httpResponse.body();
-
-存证列表 - /evidence/list
-----------------------
-
-获取存证列表
-
-json
-^^^^^^^^^^^^^^^
-=================  ============================================ ============
-参数名 				描述                                          是否可选
-=================  ============================================ ============
-evidenceType        存证类型 1.文件存证  2.hash存证                   非必选
-evidenceChannel     存证方式 1.自助  2.API                           非必选
-state               3.待支付4.上链中5.存证成功6.存证失败                非必选
-startTime           开始时间                                         非必选
-endTime             结束时间                                         非必选
-pageNumber          当前页码                                         非必选
-pageSize            每页显示数量 最大50                                非必选
-filename            文件名称                                         非必选
-=================  ============================================ ============
-
-
-返回的data
-^^^^^^^^^^^^^^
-
-调用存证获取列表接口成功后会返回存证列表
-
-=====================  ===========================================================
-字段名 				    描述
-=====================  ===========================================================
-totalPage               当前页
-pageSize                每页显示数量
-pageNum                 总页数
-rows                    存证数据对象info
-info.evidenceChannel    存证方式 1.自助  2.API
-info.attestationId      存证id
-info.auditTime          审核时间
-info.auditResult        审核结果
-info.fileHash           文件hash
-info.userId             用户id
-info.fileLabel          文件标签
-info.filename           文件名
-info.fileSize           文件大小
-info.createTime         创建时间
-info.upChainTime        上链时间
-info.evidenceType       存证类型 1:文件存证,  2:hash存证
-info.state              1.待审核 2.待复审 3.待支付 4.上链中 5.存证成功 6.存证失败
-info.username           用户名称
-=====================  ===========================================================
-
-
-以java为例::
-
-    // 构建请求参数
-    Map<String ,Object> body = new HashMap<>();
-    body.put("evidenceType",1);
     httpRequest.body(JSONUtil.toJsonStr(body));
     HttpResponse httpResponse = httpRequest.execute();
     String result = httpResponse.body();
