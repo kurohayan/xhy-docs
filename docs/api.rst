@@ -21,7 +21,7 @@
 上传文件 - /file/upload
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-客户可以通过该接口上传文件并获取文件id，文件未存证时会有使用期限。
+客户可以通过该接口上传文件并获取文件id，文档类文件最大限制150M，图片类文件最大10M，音频和视频类文件最大550M，文件未存证时数据会在存储7天后删除。
 
 form-data
 ::::::::::::
@@ -50,12 +50,29 @@ fileKey                 文件id
     HttpResponse httpResponse = httpRequest.execute();
     String result = httpResponse.body();
 
+返回结果示例:
+a.接口调用成功，则返回JSON数据示例为：::
+
+    {
+        "code": "200",
+        "data": {
+            "fileKey": "1544567382363930624"
+        },
+        "message": "操作成功"
+    }
+
+b.接口调用失败，则返回JSON数据示例为：::
+
+    {
+        "code": "1001",
+        "message": "fileLabel文件标签不能为空"
+    }
 
 文件存证 - /evidence/file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 用户进行文件存证
 
-json
+请求参数
 ::::::::::::
 
 =================  ======================================= ================
@@ -93,12 +110,32 @@ bean.attestationId      存证id
     HttpResponse httpResponse = httpRequest.execute();
     String result = httpResponse.body();
 
+返回结果示例:
+a.接口调用成功，则返回JSON数据示例为：::
+
+    {
+        "code":"200",
+        "data":[
+            {
+                "attestationId":"did:bid:ef23cydtVMQit888kfwqrZAJCccet2qQM",
+                "id":"1544567382363930624"
+            }
+        ],
+        "message":"操作成功"
+    }
+
+b.接口调用失败，则返回JSON数据示例为：::
+
+    {
+        "code": "500",
+        "message": "文件类型不支持"
+    }
 
 hash存证（sha256） - /evidence/hash
 ------------------------------------
 用户进行hash存证。
 
-json
+请求参数
 ^^^^^^^^^^^^^^^
 =================  ======================================= ================
 参数名 				描述                                    是否可选
@@ -137,13 +174,33 @@ bean.attestationId      存证id
     HttpResponse httpResponse = httpRequest.execute();
     String result = httpResponse.body();
 
+返回结果示例:
+a.接口调用成功，则返回JSON数据示例为：::
+
+    {
+        "code":"200",
+        "data":[
+            {
+                "attestationId":"did:bid:efaE9e45apUbuA87y7Y6zjMTaGfHt7WX",
+                "hash":"98df1f1dfb3b1a123c1517912dc70447aa61c6be532ac99de973abb6219e1653"
+            }
+        ],
+        "message":"操作成功"
+    }
+
+b.接口调用失败，则返回JSON数据示例为：::
+
+    {
+        "code":"1010",
+        "message":"请输入正确格式的文件hash值"
+    }
 
 存证列表 - /evidence/list
 ----------------------
 
 获取存证列表
 
-json
+请求参数
 ^^^^^^^^^^^^^^^
 =================  ============================================ ============
 参数名 				描述                                          是否可选
@@ -197,13 +254,61 @@ info.username           用户名称
     HttpResponse httpResponse = httpRequest.execute();
     String result = httpResponse.body();
 
+返回结果示例:
+a.接口调用成功，则返回JSON数据示例为：::
+
+    {
+        "code":"200",
+        "data":{
+            "totalPage":"1",
+            "pageSize":"10",
+            "rows":[
+                {
+                    "evidenceChannel":2,
+                    "attestationId":"did:bid:efaE9e45apUbuA87y7Y6zjMTaGfHt7WX",
+                    "fileHash":"98df1f1dfb3b1a123c1517912dc70447aa61c6be532ac99de973abb6219e1653",
+                    "userId":"did:bid:zfGUkdqhxEamsPvpqAH2iRHk1ifhcW61",
+                    "fileLabel":"标签",
+                    "filename":"test1",
+                    "createTime":"2022-07-07 11:10:19",
+                    "evidenceType":2,
+                    "upChainTime":"2022-07-07 11:10:59",
+                    "state":4,
+                    "username":"陈诚"
+                },
+                {
+                    "evidenceChannel":2,
+                    "attestationId":"did:bid:ef23cydtVMQit888kfwqrZAJCccet2qQM",
+                    "fileHash":"46d1f4f65279641891c13eb1cfba0f4a93cdd1c9e5d7cca31cd1860dbe7ca463",
+                    "userId":"did:bid:zfGUkdqhxEamsPvpqAH2iRHk1ifhcW61",
+                    "fileLabel":"标签",
+                    "filename":"背景图.png",
+                    "fileSize":"1306418",
+                    "createTime":"2022-07-07 11:08:51",
+                    "evidenceType":1,
+                    "state":2,
+                    "username":"陈诚"
+                }
+            ],
+            "pageNum":"1",
+            "total":"2"
+        },
+        "message":"操作成功"
+    }
+
+b.接口调用失败，则返回JSON数据示例为：::
+
+    {
+        "code": "500",
+        "message": "系统错误"
+    }
 
 存证详情 - /evidence/detail
 ----------------------
 
 查询存证详情。
 
-json
+请求参数
 ^^^^^^^^^^^^^^^
 
 =================  ======================================= ================
@@ -259,6 +364,47 @@ checkBean.hash              文件hash
     HttpResponse httpResponse = httpRequest.execute();
     String result = httpResponse.body();
 
+返回结果示例:
+a.接口调用成功，则返回JSON数据示例为：::
+
+    {
+        "code":"200",
+        "data":{
+            "checkBean":{
+                "blockHash":"ec879f484d5aed9d598c3d615ea70f8246272b3d4c5796dcedc3e67a402d0905",
+                "fileName":"test1",
+                "evidenceTime":"2022-07-07 11:10:59",
+                "flag":true,
+                "attestationId":"did:bid:efaE9e45apUbuA87y7Y6zjMTaGfHt7WX",
+                "confirmTime":"2022-07-07 11:11:01",
+                "confirmHash":"106f9a90a4ac78a45acdfe203a353562f3779ff1c6f3fc35d8914dd6a7ec06da",
+                "ledgerSeq":"1113290",
+                "hash":"98df1f1dfb3b1a123c1517912dc70447aa61c6be532ac99de973abb6219e1653"
+            },
+            "attestationId":"did:bid:efaE9e45apUbuA87y7Y6zjMTaGfHt7WX",
+            "evidenceShareCode":"KD8TCISG",
+            "pdfFileKey":"1544881909048279040",
+            "fileHash":"98df1f1dfb3b1a123c1517912dc70447aa61c6be532ac99de973abb6219e1653",
+            "attestationType":2,
+            "dataExpireFlag":false,
+            "userId":"did:bid:zfGUkdqhxEamsPvpqAH2iRHk1ifhcW61",
+            "fileLabel":"标签",
+            "filename":"test1",
+            "createTime":"2022-07-07 11:10:19",
+            "attestationChannel":2,
+            "upChainTime":"2022-07-07 11:10:59",
+            "id":"1544881469589377024",
+            "username":"陈诚"
+        },
+        "message":"操作成功"
+    }
+
+b.接口调用失败，则返回JSON数据示例为：::
+
+    {
+        "code": "500",
+        "message": "系统错误"
+    }
 
 下载存证或pdf文件 - /file/download/{fileKey}
 --------------------------------------------------------------
@@ -296,3 +442,14 @@ fileKey                文件id                                必选
         byte[] bytes = httpResponse.bodyBytes();
         IoUtil.write(new FileOutputStream("/tmp/" + fileName),true,bytes);
 
+返回结果示例:
+a.接口调用成功，则返回文件流：::
+
+    byte[]
+
+b.接口调用失败，则返回JSON数据示例为：::
+
+    {
+        "code": "2001",
+        "message": "文件不存在"
+    }

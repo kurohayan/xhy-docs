@@ -49,8 +49,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'星火链网'
-copyright = u'2022, 星火链网'
+project = u'星火·链网 星火印API'
+copyright = u'2022, 星火·链网 星火印API'
 author = u'bitfactory.cn'
 
 # The version info for the project you're documenting, acts as replacement for

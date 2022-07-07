@@ -4,14 +4,14 @@ You can adapt this file completely to your liking, but it should at least
 contain the root `toctree` directive.
 
 
-欢迎使用星火链网-星火印API文档
+欢迎使用星火·链网 星火印API文档
 ===================================
 
 .. toctree::
     :maxdepth: 2
 
-	简介 <introduction>
-    请求 <request>
+	API简介 <introduction>
+    请求说明 <request>
     对接流程 <flow>
-    接口 <api>
-	java示例 <java>
+    API接口 <api>
+	Java示例 <java>
