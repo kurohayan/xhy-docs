@@ -18,6 +18,7 @@ java::
 
     import cn.hutool.core.io.IoUtil;
     import cn.hutool.core.util.IdUtil;
+    import cn.hutool.crypto.asymmetric.SM2;
     import cn.hutool.http.HttpRequest;
     import cn.hutool.http.HttpResponse;
     import cn.hutool.http.HttpUtil;
@@ -27,70 +28,11 @@ java::
 
     import java.io.*;
     import java.nio.charset.StandardCharsets;
-    import java.security.KeyFactory;
-    import java.security.NoSuchAlgorithmException;
-    import java.security.PrivateKey;
-    import java.security.Signature;
-    import java.security.spec.InvalidKeySpecException;
-    import java.security.spec.PKCS8EncodedKeySpec;
     import java.util.*;
     import java.util.regex.Matcher;
     import java.util.regex.Pattern;
 
     public class ApiRequestTest {
-
-        static class PemReader extends BufferedReader {
-            private static final String BEGIN = "-----BEGIN ";
-            private static final String END = "-----END ";
-            private static final String END_BOUNDARY = "-----";
-
-            public PemReader(Reader in) {
-                super(in);
-            }
-
-            public byte[] readPemObject() {
-                try {
-                    String line = readLine();
-                    while (line != null && !line.startsWith(BEGIN)) {
-                        line = readLine();
-                    }
-                    if (line != null) {
-                        line = line.substring(BEGIN.length());
-                        int index = line.indexOf('-');
-                        if (index > 0 && line.endsWith(END_BOUNDARY) && (line.length() - index) == END_BOUNDARY.length()) {
-                            String type = line.substring(0, index);
-                            return loadObject(type);
-                        }
-                    }
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-                return null;
-            }
-
-            private byte[] loadObject(String type) {
-                String line;
-                String endMarker = END + type;
-                StringBuilder buf = new StringBuilder();
-                try {
-                    while ((line = readLine()) != null) {
-                        if (line.contains(":")) {
-                            continue;
-                        }
-                        if (line.contains(endMarker)) {
-                            break;
-                        }
-                        buf.append(line.trim());
-                    }
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-                if (line == null) {
-                    throw new RuntimeException(endMarker + " not found");
-                }
-                return Base64.getDecoder().decode(buf.toString());
-            }
-        }
 
         static class EvidenceHashParam {
             private String fileLabel;
@@ -166,7 +108,7 @@ java::
             HttpRequest httpRequest = createRequestPost(apiName);
             // 构建请求参数
             Map<String ,Object> body = new HashMap<>();
-            body.put("attestationId","did:bid:efsRrRCTEmA7ZWodWFPkjMW2u5Y4hikv");
+            body.put("attestationId","did:bid:efaE9e45apUbuA87y7Y6zjMTaGfHt7WX");
             httpRequest.body(JSONUtil.toJsonStr(body));
             HttpResponse httpResponse = httpRequest.execute();
             String result = httpResponse.body();
@@ -181,7 +123,7 @@ java::
             HttpRequest httpRequest = createRequestPost(apiName);
             // 构建请求参数
             Map<String ,Object> body = new HashMap<>();
-            body.put("attestationId","did:bid:efsRrRCTEmA7ZWodWFPkjMW2u5Y4hikv");
+    //        body.put("attestationId","");
             httpRequest.body(JSONUtil.toJsonStr(body));
             HttpResponse httpResponse = httpRequest.execute();
             String result = httpResponse.body();
@@ -217,7 +159,7 @@ java::
             HttpRequest httpRequest = createRequestPost(apiName);
             // 构建请求参数
             List<Long> list = new ArrayList<>();
-            list.add(1529663660129480704L);
+            list.add(1544567382363930624L);
             EvidenceFileParam evidenceFileParam = new EvidenceFileParam();
             evidenceFileParam.setFileLabel("标签");
             evidenceFileParam.setFiles(list);
@@ -233,7 +175,7 @@ java::
             String apiName = "/file/upload";
             HttpRequest httpRequest = createRequestPost(apiName);
             httpRequest.form("file",new File("/tmp/背景图.png"));
-            httpRequest.form("type","pic");
+            httpRequest.form("type","video");
 
             HttpResponse httpResponse = httpRequest.execute();
             String result = httpResponse.body();
@@ -273,7 +215,7 @@ java::
 
         private HttpRequest setHttpRequestHeaders(HttpRequest httpRequest) throws Exception {
             // RSA私钥文件路径
-            String keyFile = "/tmp/rsa_private.key";
+            String privateKey = "308193020100301306072a8648ce3d020106082a811ccf5501822d047930770201010420ab398da2bb9268c226f4c5908e94841ca6d254a90cf6e66ad848c8e01ee86d33a00a06082a811ccf5501822da144034200049ab45581431741df119e74c8699fd2cb70caeda3c6f05383dd8b4294f3ff5f3c2d7959877584ec884b75a09af99aa69d69c17f6e3018283d0452cbd0debd5262";
             // 请求头
             String requestId = IdUtil.simpleUUID();
             String accessKey = "9d82aeae8c9b4c479715fc2923619472";
@@ -282,12 +224,11 @@ java::
             //待签名数据 = requestId+accessKey+nonce
             String data = requestId + accessKey + nonce;
             // 开始签名
-            PrivateKey privateKey = getPrivateKey(new InputStreamReader(new FileInputStream(keyFile)));
-            Signature signature = Signature.getInstance("SHA256WithRSA");
-            signature.initSign(privateKey);
-            signature.update(data.getBytes(StandardCharsets.UTF_8));
+            SM2 sm2 = new SM2(privateKey,null);
+            sm2.setMode(SM2Engine.Mode.C1C2C3);
+            sm2.usePlainEncoding();
             // 签名使用Base64编码后得到的值即为请求头中signature字段的值
-            String signatureData = Base64.getEncoder().encodeToString( signature.sign());
+            String signatureData = Base64.getEncoder().encodeToString(sm2.sign(data.getBytes(StandardCharsets.UTF_8)));
             // 构建请求头
             Map<String ,String> headers = new HashMap<>();
             headers.put("request_id", requestId);
@@ -298,17 +239,6 @@ java::
             return httpRequest;
         }
 
-        public static PrivateKey getPrivateKey(Reader reader) {
-            PemReader pemReader = null;
-            try {
-                pemReader = new PemReader(reader);
-                KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-                PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(pemReader.readPemObject());
-                return keyFactory.generatePrivate(keySpec);
-            } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-                throw new RuntimeException(e);
-            } finally {
-                IoUtil.close(pemReader);
-            }
-        }
+
     }
+
