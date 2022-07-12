@@ -30,9 +30,9 @@ API地址：`https://bitfactory.cn/api`
 字段名 				描述
 =================  ================================================================
 request_id         请求号，由接入客户创建唯一字符串，长度不超过32位
-access_key         访问识别码，当您在星火印成功上传RSA公钥后会获得一个access_key
+access_key         访问识别码，当您在星火印成功上传SM2公钥后会获得一个access_key
 nonce              请求时间, 必须以 `Unix Time`_ 的格式发送, nonce与服务器时间不得超过正负300秒，否则请求将视为无效
-signature          使用你的RSA私钥进行签名后的字符串，具体签名的方法后面会进一步描述
+signature          使用你的SM2私钥进行签名后的字符串，具体签名的方法后面会进一步描述
 =================  ================================================================
 
 例如::
@@ -41,7 +41,7 @@ signature          使用你的RSA私钥进行签名后的字符串，具体签�
     "request_id": "2XiTgZ2oVrBgGqKQ1ruCKh"
     "access_key": "2y7cg8kmoGDrDBXJLaizoD"
     "nonce": "1464594744"
-    "signature": "moGDrDBXJLaizoD2hSWTZ4oqVEJKAmK2RiyT4"
+    "signature": "cdVtQ52evi4YDIuygRRiGhosn5XZyDH63LhNMk10I0LFBAamfuEBb6A2vlynVYll2ASzC/yolU/pbEAZ0zxdtg=="
 
 
 
