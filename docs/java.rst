@@ -8,6 +8,11 @@ Java
         <artifactId>hutool-all</artifactId>
         <version>5.7.22</version>
     </dependency>
+    <dependency>
+        <groupId>org.bouncycastle</groupId>
+        <artifactId>bcprov-jdk15to18</artifactId>
+        <version>1.71</version>
+    </dependency>
 
 
 示例程序
